@@ -14,7 +14,22 @@ public class MyClassLoader extends ClassLoader{
         this.loadPath = loadPath;
     }
 
-    public MyClassLoader(ClassLoader classLoader) {
+    /**
+     * 执行当前类加载器的父类加载器
+     */
+    public MyClassLoader(ClassLoader parent, String classLoaderName) {
+        super(parent);
+        this.classLoaderName = classLoaderName;
+    }
+    /**
+     * 使用appClassLoader加载器,作为本类的加载器
+     */
+    public MyClassLoader(String classLoaderName) {
+        super();
+        this.classLoaderName = classLoaderName;
+    }
+
+    public MyClassLoader(ClassLoader  classLoader) {
         super(classLoader);
     }
 
@@ -35,8 +50,7 @@ public class MyClassLoader extends ClassLoader{
             baos = new ByteArrayOutputStream();
             int ch;
             while (-1 != (ch = is.read())) {
-                ch = 255 - ch;
-                baos.write(ch);
+                baos.write(255- ch);
             }
             data = baos.toByteArray();
         } catch (FileNotFoundException e) {
@@ -64,8 +78,13 @@ public class MyClassLoader extends ClassLoader{
         return defineClass(name,data,0,data.length);
     }
 
-    public static void main(String[] args) {
-
+    public static void main(String[] args) throws ClassNotFoundException, IllegalAccessException,
+        InstantiationException {
+        MyClassLoader myClassLoader = new MyClassLoader("myClassLoader");
+        myClassLoader.setLoadPath("E:\\project\\JAVA-000\\Week_01\\");
+        Class<?> xClass = myClassLoader.loadClass("Hello");
+        Hello h1 = (Hello)xClass.newInstance();
+        h1.hello();
 
     }
 }
