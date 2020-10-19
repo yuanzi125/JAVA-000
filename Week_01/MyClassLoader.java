@@ -4,46 +4,20 @@ import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.IOException;
 import java.io.InputStream;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 
 public class MyClassLoader extends ClassLoader{
-    private final static String fileSuffixExt = ".xlass";
-    private String classLoaderName;
-    private String loadPath;
-
-    public void setLoadPath(String loadPath) {
-        this.loadPath = loadPath;
-    }
-
-    /**
-     * 执行当前类加载器的父类加载器
-     */
-    public MyClassLoader(ClassLoader parent, String classLoaderName) {
-        super(parent);
-        this.classLoaderName = classLoaderName;
-    }
-    /**
-     * 使用appClassLoader加载器,作为本类的加载器
-     */
-    public MyClassLoader(String classLoaderName) {
-        super();
-        this.classLoaderName = classLoaderName;
-    }
-
-    public MyClassLoader(ClassLoader  classLoader) {
-        super(classLoader);
-    }
 
     /**
      * 方法实现说明: 创建我们的class的二进制名称
      */
-    private byte[] loadClassData(String name) {
+    private byte[] loadClassData(String fileName) {
         byte[] data = null;
         ByteArrayOutputStream baos = null;
         InputStream is = null;
 
         try {
-            name = name.replace(".", "\\");
-            String fileName = loadPath + name + fileSuffixExt;
             File file = new File(fileName);
             is = new FileInputStream(file);
 
@@ -72,19 +46,20 @@ public class MyClassLoader extends ClassLoader{
         return data;
     }
 
-    protected Class<?> findClass(String name) throws ClassNotFoundException{
-        byte[] data = loadClassData(name);
+    protected Class<?> findClass(String name,String fileName) throws ClassNotFoundException{
+        byte[] data = loadClassData(fileName);
         System.out.println("MyClassLoader 加载的类: ==>" + name);
         return defineClass(name,data,0,data.length);
     }
 
     public static void main(String[] args) throws ClassNotFoundException, IllegalAccessException,
-        InstantiationException {
-        MyClassLoader myClassLoader = new MyClassLoader("myClassLoader");
-        myClassLoader.setLoadPath("E:\\project\\JAVA-000\\Week_01\\");
-        Class<?> xClass = myClassLoader.loadClass("Hello");
-        Hello h1 = (Hello)xClass.newInstance();
-        h1.hello();
+        InstantiationException, NoSuchMethodException, InvocationTargetException {
+        MyClassLoader myClassLoader = new MyClassLoader();
+        Class<?> aClass = myClassLoader.findClass("Hello","E:\\project\\JAVA-000\\Week_01\\Hello.xlass");
+        System.out.println(aClass.getClassLoader());
+        Object h1 = aClass.newInstance();
+        Method method = aClass.getMethod("hello");
+        method.invoke(h1);
 
     }
 }
